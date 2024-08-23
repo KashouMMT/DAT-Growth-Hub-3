@@ -3,7 +3,6 @@ package com.g3.elis.dto.form;
 public class UserDto 
 {
 	private String division;
-	private String staffId;	
 	private String name;
 	private String doorLogNo;
 	private String dept;
@@ -12,17 +11,13 @@ public class UserDto
 	private String status;
 	private String password;
 	private String gender;
+	private String staffId;
+	private String role;
 	public String getDivision() {
 		return division;
 	}
 	public void setDivision(String division) {
 		this.division = division;
-	}
-	public String getStaffId() {
-		return staffId;
-	}
-	public void setStaffId(String staffId) {
-		this.staffId = staffId;
 	}
 	public String getName() {
 		return name;
@@ -72,11 +67,22 @@ public class UserDto
 	public void setGender(String gender) {
 		this.gender = gender;
 	}
-	public UserDto(String division, String staffId, String name, String doorLogNo, String dept, String team,
-			String email, String status, String password, String gender) {
+	public String getStaffId() {
+		return staffId;
+	}
+	public void setStaffId(String staffId) {
+		this.staffId = staffId;
+	}
+	public String getRole() {
+		return role;
+	}
+	public void setRole(String role) {
+		this.role = role;
+	}
+	public UserDto(String division, String name, String doorLogNo, String dept, String team, String email,
+			String status, String password, String gender, String staffId, String role) {
 		super();
 		this.division = division;
-		this.staffId = staffId;
 		this.name = name;
 		this.doorLogNo = doorLogNo;
 		this.dept = dept;
@@ -85,9 +91,10 @@ public class UserDto
 		this.status = status;
 		this.password = password;
 		this.gender = gender;
+		this.staffId = staffId;
+		this.role = role;
 	}
-	public UserDto()
-	{
+	public UserDto() {
 		
 	}
 }
