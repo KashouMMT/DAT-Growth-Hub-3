@@ -68,9 +68,9 @@ public class CourseServiceImpl implements CourseService {
 		{
 			course.setDuration(superDto.getCourseDto().getDurationHour());
 		}
-		if(!(imgFile.isEmpty())|| imgFile != null)
+		if(!(imgFile.isEmpty()) && imgFile != null)
 		{
-	        course.setCourseImageFileName(fileStorageConfig.saveFile(imgFile, imgFile.getOriginalFilename(), courseInputFilePath));
+	        course.setCourseImageFileName(fileStorageConfig.saveFile(imgFile, courseInputFilePath));
 		}
 		
 		List<CourseModule> courseModuleList = new ArrayList<>();
@@ -132,7 +132,7 @@ public class CourseServiceImpl implements CourseService {
 	    }
 	    
 	    if(imgFile != null && !imgFile.isEmpty()) {
-	        course.setCourseImageFileName(fileStorageConfig.saveFile(imgFile, imgFile.getOriginalFilename(), courseInputFilePath));
+	        course.setCourseImageFileName(fileStorageConfig.saveFile(imgFile, courseInputFilePath));
 	    }
 
 	    List<CourseModule> existingModules = course.getCourseModule();
@@ -274,6 +274,15 @@ public class CourseServiceImpl implements CourseService {
 	}
 
 	@Override
+
+	public List<Course> findCoursesByCategory(int categoryId) {
+		
+		    return courseRepository.findByCourseCategoriesId(categoryId);
+		
+	}
+	
+	 
+
 	public List<Course> getAllPendingCourse() {
 		List<Course> courses = courseRepository.findAll();
 		List<Course> returnCourseList = new ArrayList<>();
@@ -283,12 +292,22 @@ public class CourseServiceImpl implements CourseService {
 			returnCourseList.add(course);
 		}	
 		return returnCourseList;
+	}
+
+	@Override
+	public List<Course> searchPendingCourses(String searchQuery) {
+		
+		    return courseRepository.findByCourseTitleContainingIgnoreCase(searchQuery);
+		}
+	@Override
+	public int getTotalCourseCourseByUser(int userId) {
+		// TODO Auto-generated method stub
+		return courseRepository.countTotalCoursesByUserId(userId);
+	}
+
+	@Override
+	public int getTotalActivatedCourseCountByUser(int userId) {
+		// TODO Auto-generated method stub
+		return courseRepository.countActivatedCoursesByUserId(userId);
 	} 
 }
-
-
-
-
-
-	
-

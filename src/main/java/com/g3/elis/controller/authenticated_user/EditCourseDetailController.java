@@ -2,9 +2,11 @@ package com.g3.elis.controller.authenticated_user;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -14,6 +16,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.SessionAttributes;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.g3.elis.dto.form.AnswerDto;
 import com.g3.elis.dto.form.CourseAssignmentDto;
@@ -36,6 +39,7 @@ import com.g3.elis.service.CourseModuleService;
 import com.g3.elis.service.CourseService;
 import com.g3.elis.service.EnrolledCourseService;
 import com.g3.elis.service.QuestionService;
+import com.g3.elis.service.ReportService;
 
 @Controller
 @RequestMapping({"/admin","/instructor"})
@@ -62,8 +66,11 @@ public class EditCourseDetailController {
 	@Autowired
 	private AnswerService answerService;
 	
+	@Autowired
+	private ReportService reportService;
+	
 	@ModelAttribute("superDto")
-    public QuestionCreationSuperDto populateSuperDto() {
+    public QuestionCreationSuperDto populatesuperDto() {
 		QuestionCreationSuperDto superDto = new QuestionCreationSuperDto();
 		superDto.setQuestionDto(new QuestionDto());
 		superDto.setAnswerDtoList(new ArrayList<AnswerDto>());;
@@ -78,18 +85,31 @@ public class EditCourseDetailController {
 		for (int i = 0; i < course.getCourseModule().size(); i++)
 			totalModules++;
 		for (EnrolledCourse enrolledCourse : enrolledCourseService.getAllEnrolledCourse()) {
-			if (enrolledCourse.getCourses().getId() == course.getId()) {
-				totalEnrolled++;
+			if (enrolledCourse.getCourses().getId() == course.getId()) 
+			{
+				totalEnrolled++;	
 			}
 		}
+		List<Integer> activeChartStudent = reportService.generateYearlyTotalCourseCompletedForActiveChartStudent(courseId);
+		int totalCourseComplete = 0;
+		for(int i = 0; i < activeChartStudent.size();i++)
+		{
+			totalCourseComplete+= activeChartStudent.get(i);
+		}
+		model.addAttribute("activeChartStudent",reportService.generateYearlyTotalCourseCompletedForActiveChartStudent(courseId));
+		model.addAttribute("activeChartStudent2",reportService.generateYearlyTotalEnrolledForActiveChartStudent(courseId));
 		model.addAttribute("courseId", courseId);
 		model.addAttribute("totalModules", totalModules);
 		model.addAttribute("totalEnrolled", totalEnrolled);
+		model.addAttribute("totalCourseComplete",totalCourseComplete);
 		model.addAttribute("course", course);
 		model.addAttribute("map",determineMapping());
-		return "/authenticated-user/edit-course-detail";
+		
+	return "/authenticated-user/edit-course-detail";
 	}
 
+	
+	
 	@GetMapping("/edit-course-detail/add-module")
 	public String adminAddModule(@RequestParam(name = "courseId") int courseId, Model model) {
 		CourseModuleDto courseModuleDto = new CourseModuleDto();
@@ -159,16 +179,19 @@ public class EditCourseDetailController {
 		model.addAttribute("courseId", courseId);
 		model.addAttribute("courseModuleId", courseModuleId);
 		model.addAttribute("map",determineMapping());
-		return "/authenticated-user/edit-course-material";
+		return "/authenticated-user/add-course-material";
 	}
 
 	@PostMapping("/edit-course-detail/add-material")
 	public String submitAddMaterial(@ModelAttribute("courseMaterialDto") CourseMaterialDto courseMaterialDto,
 									@RequestParam(name = "courseId") int courseId, 
 									@RequestParam(name = "courseModuleId") int courseModuleId,
+									@RequestParam(name = "content")String content,
+									@RequestParam(name = "inputFile")MultipartFile inputFile,
 									Model model) throws IOException 
 	{
-		courseMaterialService.createCourseMaterial(courseMaterialDto, courseModuleId);
+		courseMaterialDto.setContent(content);		
+		courseMaterialService.createCourseMaterial(courseMaterialDto, courseModuleId,inputFile);
 		model.addAttribute("map",determineMapping());
 		return "redirect:/"+ determineMapping() +"/edit-course-detail?courseId=" + courseId;
 	}
@@ -198,9 +221,12 @@ public class EditCourseDetailController {
 									 @RequestParam(name = "courseId") int courseId,
 									 @RequestParam(name = "courseModuleId") int courseModuleId,
 									 @RequestParam(name = "courseMaterialId") int courseMaterialId,
+									 @RequestParam(name = "content")String content,
+									 @RequestParam(name = "inputFile")MultipartFile inputFile,
 									 Model model) throws IOException 
 	{
-		courseMaterialService.editCourseMaterial(courseMaterialDto, courseMaterialId, courseModuleId);
+		courseMaterialDto.setContent(content);
+		courseMaterialService.editCourseMaterial(courseMaterialDto, courseMaterialId, courseModuleId,inputFile);
 		model.addAttribute("map",determineMapping());
 		return "redirect:/"+ determineMapping() +"/edit-course-detail?courseId=" + courseId;
 	}
@@ -306,13 +332,13 @@ public class EditCourseDetailController {
 	}
 	
 	@PostMapping("/edit-course-detail/edit-assignment/add-question")
-	public String submitAddQuestion(@ModelAttribute("questionDto") QuestionDto questionDto,
+	public String submitAddQuestion(@ModelAttribute("superDto") QuestionDto superDto,
 									@RequestParam(name = "courseModuleId") int courseModuleId, 
 									@RequestParam(name = "courseId") int courseId,
 									@RequestParam(name = "courseAssignmentId") int courseAssignmentId,
 									Model model) 
 	{
-		questionService.createQuestion(questionDto, courseAssignmentId);
+		questionService.createQuestion(superDto, courseAssignmentId);
 		model.addAttribute("map",determineMapping());
 		return "redirect:/"+ determineMapping() +"/edit-course-detail/edit-assignment?courseId=" + courseId + "&courseModuleId="
 				+ courseModuleId + "&courseAssignmentId=" + courseAssignmentId;
@@ -384,8 +410,8 @@ public class EditCourseDetailController {
 			   					 Model model)
 	{
 		AnswerDto answerDto = new AnswerDto();
+		superDto.getAnswerDtoList().clear();
 		for(int i = 0; i< answerCount;i++) superDto.getAnswerDtoList().add(answerDto);
-
 		model.addAttribute("action", action);
 		model.addAttribute("superDto", superDto);
 		model.addAttribute("course", courseService.getCourseById(courseId));
@@ -498,14 +524,14 @@ public class EditCourseDetailController {
 		+ courseModuleId + "&courseAssignmentId=" + courseAssignmentId;
 	}
 	
-	private String determineMapping()
-	{
-		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-		LoginUserDetail userDetail = (LoginUserDetail) authentication.getPrincipal();
-		if(userDetail.isAdmin())
-		{
-			return "admin";
-		}
-		return "instructor";
-	}
+	private String determineMapping() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        LoginUserDetail userDetail = (LoginUserDetail) authentication.getPrincipal();
+        if(userDetail.isAdmin()) {
+            return "admin";
+        }
+        return "instructor";
+    }
+	
+	
 }

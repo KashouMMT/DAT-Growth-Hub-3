@@ -1,3 +1,4 @@
+<!DOCTYPE>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
 <meta charset="UTF-8">
@@ -88,7 +89,7 @@
 									<td
 										th:text="${#lists.size(enrolledCourse.enrolledModules.?[completeStatus == true])}"></td>
 									<td>
-										<!-- Check if total enrolled modules equals completed modules -->
+							<!-- Check if total enrolled modules equals completed modules -->
 										<div
 											th:if="${#lists.size(enrolledCourse.enrolledModules) == #lists.size(enrolledCourse.enrolledModules.?[completeStatus == true])}">
 											<!-- Completed course -->
@@ -96,9 +97,9 @@
 												class="btn btn-sm btn-success me-1 mb-1 mb-md-0 disabled">
 												<i class="bi bi-check me-1"></i>Complete
 											</button>
-											<a href="#" class="btn btn-sm btn-light me-1"> <i
+										<!--  	<a href="#" class="btn btn-sm btn-light me-1"> <i
 												class="bi bi-arrow-repeat me-1"></i>Restart
-											</a>
+											</a>-->
 										</div> <!-- Check if total enrolled modules is less than completed modules -->
 										<div
 											th:if="${#lists.size(enrolledCourse.enrolledModules) > #lists.size(enrolledCourse.enrolledModules.?[completeStatus == true])}">
@@ -110,6 +111,7 @@
 											</a>
 										</div>
 									</td>
+
 							</tbody>
 							<!-- Table body END -->
 						</table>

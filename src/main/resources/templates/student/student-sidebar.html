@@ -25,14 +25,14 @@ Page Banner START -->
 						<div class="col-auto">
 							<div class="avatar avatar-xxl position-relative mt-n3">
 								<img class="avatar-img rounded-circle border border-white border-3 shadow" th:if="${user.profile != null && user.profile.profileImg != null}"th:src="@{'/private/profile/user-profile/' + ${user.profile.profileImg}}" alt="avatar">
-								<img class="avatar-img rounded-circle border border-white border-3 shadow" th:unless="${user.profile != null && user.profile.profileImg != null}" th:src="@{'/public/assets/images/avatar/06.jpg'}" alt="avatar">
+								<img class="avatar-img rounded-circle border border-white border-3 shadow" th:unless="${user.profile != null && user.profile.profileImg != null}" th:src="@{'/public/assets/images/avatar/GUEST.png'}" alt="avatar">
 							</div>
 						</div>
 						<!-- Profile info -->
 						<div class="col d-sm-flex justify-content-between align-items-center">
 							<div>
 								<h1 class="my-1 fs-4" th:text="${user.name}">Student</h1>
-								<ul class="list-inline mb-0">
+							<!--  	<ul class="list-inline mb-0">
 									
 									<li class="list-inline-item me-3 mb-1 mb-sm-0">
 										
@@ -46,7 +46,7 @@ Page Banner START -->
 										<span class="h6">52</span>
 										<span class="text-body fw-light">Completed lessons</span>
 									</li>
-								</ul>
+								</ul>-->
 							</div>
 							<!-- Button -->
 							<div class="mt-2 mt-sm-0">
